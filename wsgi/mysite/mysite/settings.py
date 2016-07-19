@@ -26,7 +26,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = 'tu^3doh&bqq4e00&@q0z(d$lwb_bqjc7c6#w=eht3vziqakm!k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 TEMPLATE_DEBUG = True
 
@@ -81,7 +81,7 @@ DATABASE_DIR=BASE_DIR
 #OpenShift define here
 
 
-if os.environ.has_key('OPENSHIFT_REPO_DIR'):
+if 'OPENSHIFT_REPO_DIR' in os.environ:
     DEBUG = bool(os.environ.get('DEBUG', False))
     if DEBUG:
         print("WARNING: The DEBUG environment is set to True.")
@@ -111,13 +111,8 @@ DATABASES = {
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/
 
-#LANGUAGE_CODE = 'en-us'
-LANGUAGE_CODE = 'zh-CN'
-
-
-LANGUAGE_CODE = 'zh-CN'
-
 TIME_ZONE = 'Asia/Shanghai'
+LANGUAGE_CODE = 'zh-hans'
 
 #TIME_FORMAT = 'a'
 DATETIME_FORMAT='Y/m/d H:i:s'

@@ -20,7 +20,8 @@ if hasattr(random, 'SystemRandom'):
     randrange = random.SystemRandom().randrange
 else:
     randrange = random.randrange
-_MAX_CSRF_KEY = 18446744073709551616L     # 2 << 63
+
+_MAX_CSRF_KEY = 18446744073709551616     # 2 << 63
  
 def _get_new_submit_key():
     return hashlib.md5("%s%s" % (randrange(0, _MAX_CSRF_KEY), settings.SECRET_KEY)).hexdigest()
@@ -31,7 +32,7 @@ def anti_resubmit(page_key=''):
         def _wrapped_view(request, *args, **kwargs):
             if request.method == 'GET':
                 request.session['%s_submit' % page_key] = _get_new_submit_key()
-                print 'session:' + request.session.get('%s_submit' % page_key)
+                print('session:' + request.session.get('%s_submit' % page_key))
             elif request.method == 'POST':
                 old_key = request.session.get('%s_submit' % page_key, '')
                 if old_key == '':

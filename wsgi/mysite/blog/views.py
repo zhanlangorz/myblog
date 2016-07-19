@@ -16,8 +16,8 @@ import datetime
 from django.db import connection
 from django.db.models import Q
 from django.core.context_processors import csrf
-from feeds import ArticlesFeed
-from util import anti_resubmit,anti_frequency
+from blog.feeds import ArticlesFeed
+from blog.util import anti_resubmit,anti_frequency
 from django.http import HttpResponseRedirect
 from blog.forms import CommentForm
 from django.views.generic import View
@@ -79,7 +79,7 @@ def month_archive(request,year,month):
     context={'contents':year+' '+month}
     return render_to_response('index.html',context)
 def archives(request,num=1,num_page=20):
-    if(long(num)<=0):
+    if(num<=0):
         num=1
     page=None    
         #get post data
@@ -100,7 +100,7 @@ def archives(request,num=1,num_page=20):
 def render_sidebar(request):
     #ToDo profile
     #recent_comments=Comments.objects.all().only('comment_id','comment_post','comment_author').order_by('comment_date')
-    recent_comments=Comments.objects.select_related('comment_post').filter(comment_approved='1',comment_post__post_status='publish',comment_post__post_type='post').order_by('-comment_date')[:7]
+    recent_comments = Comments.objects.select_related('comment_post').filter(comment_approved='1',comment_post__post_status='publish',comment_post__post_type='post').order_by('-comment_date')[:7]
     #recent_comments=''
     #return test(request,{'test':recent_comments})
 
@@ -126,11 +126,12 @@ def render_sidebar(request):
     context={
         'recent_posts':recent_posts,
         'recent_comments':recent_comments,
-        'categories':categories,
-        'archives':archives,
-        'links':links,
-        'links_opt':links_opt,
-   }
+        #'categories':categories,
+        #'archives':archives,
+        #'links':links,
+        #'links_opt':links_opt,
+        }
+    print(context)
     return render_to_string('sidebar.html',context)
 
 #for post
@@ -175,7 +176,7 @@ def comment(request):
             comment_email=form.cleaned_data['email']
             comment_url=form.cleaned_data['url']
             comment_parent=request.POST.get('comment_parent').strip()
-            print 'comment_parent:',comment_parent
+            print('comment_parent:',comment_parent)
             comment_author_ip=get_client_ip(request)
             comment_agent=request.META.get('HTTP_USER_AGENT',None)
             if comment_post_id==None or comment_parent==None:
@@ -503,19 +504,19 @@ def render_article(request,post_id,contexts=None):
             request.session['post_views'] ={}
             vv=request.session.get('post_views')
         if vv.has_key(post_id)==False:
-            print 2
+            print(2)
             views=Postmeta.objects.filter(post_id=cur_post.first(),meta_key='views').first()
             if views:
                 views.meta_value=str(int(views.meta_value)+1)
                 views.save()
-                print 3
+                print(3)
             else:
                 views=Postmeta()
                 views.post_id=cur_post.first()
                 views.meta_key=u'views'
                 views.meta_value='1'
                 views.save()
-                print 4
+                print(4)
             request.session.modified = True
             request.session['post_views'][post_id]=1
 
@@ -536,7 +537,7 @@ def render_article(request,post_id,contexts=None):
 
 def render_pages(request,num='1',more=300):
     context={}
-    if(long(num)<=0):
+    if(int(num)<=0):
         num=1
     page=None    
     post_id=request.GET.get('p')
@@ -582,8 +583,8 @@ class MyPaginator(Paginator):
     
     def _get_page_range_ext(self):
         page_range=super(MyPaginator,self).page_range
-        start=long(self.page_number) -1- self.range_num/2
-        end=long(self.page_number)+self.range_num/2
+        start=self.page_number -1- self.range_num/2
+        end=self.page_number+self.range_num/2
         if(start<=0):
             end=end-start
             start=0

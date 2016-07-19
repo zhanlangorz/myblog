@@ -17,10 +17,10 @@ def autop_filter(value,autoescape=None):
         esc = lambda x: x 
         pass
     for v in values:
-      	if v=='\r':
-    		ret=esc(ret)+'<br>'
-    	else:
-			ret=ret+'<p>'+esc(v).replace('\r','<br>')+'</p>'
-	ret=mark_safe(ret)
+        if v=='\r':
+            ret=esc(ret)+'<br>'
+        else:
+            ret=ret+'<p>'+esc(v).replace('\r','<br>')+'</p>'
+    ret=mark_safe(ret)
     return ret
 

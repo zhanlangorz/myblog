@@ -100,7 +100,7 @@ def value_get(value,key,default=None):
             return getattr(value,key)
         else:
             return ''
-    except Exception,e:
+    except Exception as e:
         return 'except:',e
 
 
@@ -314,5 +314,5 @@ def autop_filter(value,autoescape=None):
                     
                 #ret=ret+esc(v).replace('','')
         ret=ret+'<p>'+ret_p+'</p>'
-	ret=mark_safe(ret)
+    ret=mark_safe(ret)
     return ret

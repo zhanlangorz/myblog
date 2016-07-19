@@ -5,3 +5,8 @@
 *~
 .project
 .pydevproject
+wsgi/static/*
+wsgi/mysite/db.sqlite3
+wsgi/mysite/blog/migrations
+dist/
+Blog.egg-info

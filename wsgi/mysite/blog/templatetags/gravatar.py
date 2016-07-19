@@ -38,7 +38,7 @@ def gravatar_url(parser, token):
     try:
         tag_name, email = token.split_contents()
     except ValueError:
-        raise template.TemplateSyntaxError, "%r tag requires a single argument" % token.contents.split()[0]
+        raise(template.TemplateSyntaxError, "%r tag requires a single argument" % token.contents.split()[0])
 
     return GravatarUrlNode(email)
 
@@ -50,8 +50,8 @@ def get_gravatar(email,size=44,verify_default=False):
             gravatar_url += '&d=404'
             try:
                 urllib2.urlopen(gravatar_url)
-            except urllib2.URLError, e:
+            except urllib2.URLError as e:
                 return None
         return gravatar_url
-    except Exception,e:
+    except Exception as e:
         return ''

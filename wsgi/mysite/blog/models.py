@@ -24,7 +24,6 @@ from django.utils import timezone
 
 from django.db import models
 from django.core.urlresolvers import reverse
-from django.utils.encoding import force_unicode
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import (
@@ -35,8 +34,6 @@ from django.contrib.auth.hashers import (
     check_password, make_password, is_password_usable)
 from django.utils.translation import ugettext, ugettext_lazy as _
 from django.utils.crypto import get_random_string, salted_hmac
-
-
 
 
 db_prefix='wp_'
@@ -92,48 +89,9 @@ TARGET_TYPE=(
     ('_top','弹出'),
     ('_none','同窗口')
     )
-class DjangoMigrations(models.Model):
-    id = models.IntegerField(primary_key=True)  # AutoField?
-    app = models.CharField(max_length=255)
-    name = models.CharField(max_length=255)
-    applied = models.DateTimeField()
-
-    class Meta:
-        managed = db_managed
-        db_table = 'django_migrations'
-
-
-# from django.contrib.auth.models import User
-# from django.contrib.auth.admin import UserAdmin
-# import datetime
-# class ProfileBase(type):
-#     def __new__(cls, name, bases, attrs):
-#         module = attrs.pop('__module__')
-#         parents = [b for b in bases if isinstance(b, ProfileBase)]
-#         if parents:
-#             fields = []
-#             for obj_name, obj in attrs.items():
-#                 if isinstance(obj, models.Field): fields.append(obj_name)
-#                 User.add_to_class(obj_name, obj)
-#             UserAdmin.fieldsets = list(UserAdmin.fieldsets)
-#             UserAdmin.fieldsets.append((name, {'fields': fields}))
-#         return super(ProfileBase, cls).__new__(cls, name, bases, attrs)
-        
-# class Profile(object):
-#     __metaclass__ = ProfileBase
-
-# class MyProfile(Profile):
-#     nickname = models.CharField(max_length = 255)
-#     birthday = models.DateTimeField(null = True, blank = True)
-#     city = models.CharField(max_length = 30, blank = True)
-#     university = models.CharField(max_length = 255, blank = True)
-    
-#     def is_today_birthday(self):
-#         return self.birthday.date() == datetime.date.today()
 
 
 class Options(models.Model):
-    #option_id = models.BigIntegerField(primary_key=True)
     option_id = models.AutoField(primary_key=True)
     option_name = models.CharField(verbose_name='名称', unique=True, max_length=64)
     option_value = models.TextField(verbose_name='值')
@@ -145,6 +103,7 @@ class Options(models.Model):
         verbose_name_plural = u'可选管理'
     def __unicode__(self):
         return u'id[%s] %s' % (self.option_id,self.option_name)    
+
     
 class Usermeta(models.Model):
     umeta_id = models.BigIntegerField(primary_key=True)
@@ -157,10 +116,7 @@ class Usermeta(models.Model):
         db_table = db_prefix+'usermeta'
 
 
-
 class MyUserManager(BaseUserManager):
-
-
     def _create_user(self, user_login, user_email, user_pass,
                      is_staff, is_superuser, **extra_fields):
         if not user_login:
@@ -171,7 +127,6 @@ class MyUserManager(BaseUserManager):
             user_login=user_login,
             is_staff=is_staff,
             is_superuser=is_superuser,
-#            user_registered=timezone.now,
             user_status=1,
         )
 
@@ -187,10 +142,9 @@ class MyUserManager(BaseUserManager):
         return self._create_user(user_login, user_email, password, True, True,
                                  **extra_fields)
 
+
 class MyAbstractBaseUser(models.Model):
     REQUIRED_FIELDS = []
-
-
 
     class Meta:
         abstract = True
@@ -235,9 +189,9 @@ class MyAbstractBaseUser(models.Model):
         key_salt = "django.contrib.auth.models.AbstractBaseUser.get_session_auth_hash"
         return salted_hmac(key_salt, self.user_pass).hexdigest()
 
+
 class Users(MyAbstractBaseUser,PermissionsMixin):
-    #id = models.BigIntegerField(primary_key=True)  # Field name made lowercase.
-    id=models.AutoField(primary_key=True,unique=True) 
+    id = models.AutoField(primary_key=True,unique=True) 
     user_login = models.CharField(max_length=60,unique=True,verbose_name='登录名')
     user_pass = models.CharField(max_length=164,verbose_name='密码')
     user_nicename = models.CharField(max_length=50,blank=True,verbose_name='昵称')
@@ -247,10 +201,6 @@ class Users(MyAbstractBaseUser,PermissionsMixin):
     user_activation_key = models.CharField(max_length=60,blank=True)
     user_status = models.IntegerField(choices=USER_STATUS,default=0,verbose_name='状态',blank=True)
     display_name = models.CharField(max_length=250,blank=True,verbose_name='显示名字')
-
-
-    #is_active = models.BooleanField(default=True)
-    #is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(_('staff status'),default=False,blank=True)
     last_login = models.DateTimeField(_('last login'), default=timezone.now,blank=True)
 
@@ -258,8 +208,6 @@ class Users(MyAbstractBaseUser,PermissionsMixin):
     REQUIRED_FIELDS = ['user_email']
 
     objects = MyUserManager()
-
-
 
     def set_password(self, raw_password):
         self.user_pass = make_password(raw_password)
@@ -278,10 +226,7 @@ class Users(MyAbstractBaseUser,PermissionsMixin):
         # Sets a value that will never be a valid hash
         self.user_pass = make_password(None)
 
-    
-
     #############
-
     def get_full_name(self):
         # The user is identified by their email address
         return self.user_nicename
@@ -296,7 +241,6 @@ class Users(MyAbstractBaseUser,PermissionsMixin):
         """
         send_mail(subject, message, from_email, [self.email], **kwargs)
 
-
     @property
     def is_active(self):
         return self.user_status
@@ -304,22 +248,16 @@ class Users(MyAbstractBaseUser,PermissionsMixin):
 
     def __unicode__(self):
         return u'%s' % (self.user_nicename)
-        #return u'id['+str(self.id)+'] '+self.user_nicename
+
     class Meta:
         managed = db_managed
         db_table = db_prefix+'users'
         verbose_name=u'用户'
         verbose_name_plural = u'用户管理'
-        #app_label = u'系统管理' 
-        #swappable = 'AUTH_USER_MODEL'
-
-
 
 
 class Posts(models.Model):
-    #id = models.BigIntegerField(db_column='ID', primary_key=True)  # Field name made lowercase.
     id=models.AutoField(primary_key=True) 
-    #post_author = models.BigIntegerField()
     post_author = models.ForeignKey(Users,db_column='post_author',verbose_name='作者')
     post_date = models.DateTimeField(verbose_name='发布时间',default=datetime.datetime.now,blank=True)
     post_date_gmt = models.DateTimeField(default=timezone.now,blank=True)
@@ -344,11 +282,9 @@ class Posts(models.Model):
     comment_count = models.BigIntegerField(default=0,blank=True)
     def __unicode__(self):
         return u'%s' % (self.post_title)
-        #return u'id['+str(self.id)+'] '+self.post_title
+
     #@models.permalink
     def get_absolute_url(self):
-        # return '/blog/article/%s'%self.id
-        # return ('blog.views.article',[str(self.id)])
         if self.post_type =='post':
             return reverse('blog.views.article', args=[str(self.id)])
         elif self.post_type =='page':
@@ -365,7 +301,6 @@ class Posts(models.Model):
 
 class Postmeta(models.Model):
     meta_id = models.AutoField(primary_key=True)
-    # post_id = models.BigIntegerField()
     post_id = models.ForeignKey(Posts,db_column='post_id')
     meta_key = models.CharField(max_length=255, blank=True)
     meta_value = models.TextField(blank=True)
@@ -391,9 +326,7 @@ class Commentmeta(models.Model):
 
 
 class Comments(models.Model):
-    #comment_id = models.BigIntegerField(db_column='comment_ID', primary_key=True)  # Field name made lowercase.
     comment_id=models.AutoField(primary_key=True)
-    #comment_post_id = models.BigIntegerField(db_column='comment_post_ID')  # Field name made lowercase.
     comment_post=models.ForeignKey(Posts,verbose_name='文章')
     comment_author = models.CharField(max_length=100,verbose_name='评论者')
     comment_author_email = models.CharField(max_length=100)
@@ -417,8 +350,6 @@ class Comments(models.Model):
             return '/blog/page/%s#comment-%s'%(self.comment_post.id,self.comment_id)
         else:
             return '/blog/?p=%s#comment-%s'%(self.comment_post.id,self.comment_id)
-        # return ('blog.views.article',[str(self.id)])
-        #return reverse('blog.views',args=['?p='+str(self.comment_post)] )
     
     class Meta:
         managed = db_managed
@@ -429,45 +360,42 @@ class Comments(models.Model):
         permissions = (
             ("can_comment_direct", "can_comment_direct"),
             ("can_comment_unlimit_time",'不限制时间评论')
-            
         )
 
     def __unicode__(self):
         return u'%s'% (self.comment_id)
-        #return u'id['+str(self.id)+'] '+self.post_title
     
 
 class Terms(models.Model):
     term_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=200,verbose_name=u'分类名')
-    slug = models.CharField(unique=True, max_length=200,verbose_name=u'缩略名')
-    term_group = models.BigIntegerField(default=0,verbose_name='分组号')
-    def __unicode__(self):
-        return u'%s' % (self.name)
+    name = models.CharField(max_length=200, verbose_name='分类名')
+    slug = models.CharField(unique=True, max_length=200, verbose_name='缩略名')
+    term_group = models.BigIntegerField(default=0, verbose_name='分组号')
+    def __str__(self):
+        return self.name
       
     class Meta:
         managed = db_managed
-        db_table = db_prefix+'terms'
-        verbose_name=u'目录/标签'
-        verbose_name_plural=u'目录/标签管理'
+        db_table = db_prefix + 'terms'
+        verbose_name = '目录/标签'
+        verbose_name_plural = '目录/标签管理'
 
 
 class TermTaxonomy(models.Model):
     term_taxonomy_id = models.AutoField(primary_key=True)
-    #term_id = models.BigIntegerField()
-    term=models.ForeignKey(Terms,verbose_name=u'目录/标签')
+    term = models.ForeignKey(Terms,verbose_name='目录/标签')
     taxonomy = models.CharField(max_length=32,choices=TAXONOMY_TYPE,verbose_name='分类方法(category/post_tag)')
     description = models.TextField(verbose_name='分类描述')
     parent = models.BigIntegerField(default=0,verbose_name='父分类id')
     count = models.BigIntegerField(default=0,verbose_name='数量统计')
-    def __unicode__(self):
-        return u'%s ->%s(%s)' % (self.taxonomy,self.term.name,self.description)
+    def __str__(self):
+        return '%s ->%s(%s)' % (self.taxonomy,self.term.name,self.description)
     
     class Meta:
         managed = db_managed
         db_table = db_prefix+'term_taxonomy'
-        verbose_name=u'目录/标签分类'
-        verbose_name_plural=u'目录/标签分类管理'
+        verbose_name = '目录/标签分类'
+        verbose_name_plural = '目录/标签分类管理'
 
 
 class Links(models.Model):
@@ -497,17 +425,10 @@ class PostLinkeManager(models.Manager):
     def get_queryset(self):
         
         ret=super(PostLinkeManager, self).get_queryset().filter()
-        # for r in ret:
-        #     if r.term_taxonomy.taxonomy=='link_category':
-        #         #links=Links.objects.get(link_id=r.object_id)
-        #         r.object.post_title=links
-        #     r.object.post="111"
         return ret
 
 class TermRelationships(models.Model):
-    #object_id = models.BigIntegerField(verbose_name='文章/链接')
     term_relationship_id=models.AutoField(primary_key=True)
-    #django 这个不适合使用，django two foreign keys with one column a little sad :(
     object=models.ForeignKey(Posts,verbose_name='文章')
     object_link=models.ForeignKey(Links,null=True,verbose_name='链接',db_column='object_link')
 
@@ -526,7 +447,6 @@ class TermRelationships(models.Model):
     class Meta:
         managed = db_managed
         db_table = db_prefix+'term_relationships'
-        #unique_together=('object','term_taxonomy_id')
         verbose_name_plural=u'文章/链接分类管理'
         verbose_name=u'文章/链接分类'
 
@@ -536,14 +456,12 @@ class TermRelationships(models.Model):
 class Manager(object):
     """docstring for Manager"""
     def __new__(cls,*args,**kwargs):
-        #print '#####new'
         if not hasattr(cls,'_instance'):
             o=super(Manager,cls)
-            #print 'new',type(o),type(cls),cls
             cls._instance=o.__new__(cls,*args,**kwargs)
             cls.instances={}
-            #print 'type:',cls
         return cls._instance
+
     def _get_class(self,cls=''):
             module_name=''
             class_name=''
@@ -553,12 +471,12 @@ class Manager(object):
             else:
                 class_name=ws[0]
                 module_name= __file__ and os.path.splitext(os.path.basename(__file__))[0] 
-            print module_name
+            print(module_name)
             module_meta = __import__(module_name, globals(), locals(), [class_name]) 
-            #print 'module_meta:',module_meta,' class_name:',class_name
             class_meta = getattr(module_meta, class_name) 
             cls=class_meta 
             return cls
+
     def __init__(self, cls=None,*args,**kwargs):
         #print '#####init self=',self.__class__.__name__,' cls:',cls
         self.cls=cls
@@ -578,6 +496,7 @@ class Manager(object):
             obj=cls(*args,**kwargs)
             self.instances[cls]=obj
             self=obj
+
     def instance(self,cls=None,*args,**kwargs):
         #print 'membermethod'
         try:
@@ -594,12 +513,13 @@ class Manager(object):
                 obj=cls(*args,**kwargs)
                 self.instances[cls]=obj
                 return obj
-        except TypeError,e:
+        except TypeError as e:
             return cls
-        except AttributeError,e:
+        except AttributeError as e:
             return  cls
-        except Exception , e:
+        except Exception as e:
             return e
+
     @classmethod
     def inst(cls,clz=None,*args,**kwargs):
         if clz==None:
@@ -607,19 +527,23 @@ class Manager(object):
                 return cls()
             clz=cls
         return cls(clz,*args,**kwargs).instance(*args,**kwargs)
+
     @staticmethod
     def ins(cls=None,*args,**kwargs):
         return Manager(cls,*args,**kwargs).inst(cls,*args,**kwargs) 
+
     @classmethod
     def add_member_method(self,cls,fun,*args,**kwargs):
         obj=self.instance(cls,*args,**kwargs);
         setattr(obj,fun.__name__,type.MethodType(fun,obj))
         return obj
+
     @classmethod
     def add_static_method(self,cls,fun,*args,**kwargs):
         obj=self.instance(cls,*args,**kwargs)
         setattr(obj,fun.__name__,fun)
         return obj
+
     @classmethod
     def add_class_method(self):
         pass
@@ -643,10 +567,9 @@ class Manager(object):
             blogdescription=''
         
         info =HeadInfo(blogname,blogdescription)       
-        #info={'blogname':'aaa','blogdescription':'aaa'}
         return info
-    def get_all_links(self):
 
+    def get_all_links(self):
         links=Links.objects.filter(link_visible='Y')
         cats=TermRelationships.objects.select_related('term_taxonomy__term').filter(term_taxonomy__taxonomy__in=('link_category',),term_taxonomy__count__gt=0)
         all_links={}

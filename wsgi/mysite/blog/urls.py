@@ -10,7 +10,7 @@ from blog import views
 from django.conf import settings
 from blog.views import * 
 from django.contrib import admin
-from feeds import ArticlesFeed,CommentsFeed
+from blog.feeds import ArticlesFeed,CommentsFeed
 
 urlpatterns= patterns('blog.views',
             url(r'^$','index'),
